@@ -6,9 +6,9 @@ syntax on
 " Prevents some security exploits. Not sure what modelines are...
 set modelines=0
 
-" Set tabs to be TABs that take 4 characters
-set shiftwidth=4
-set tabstop=4
+" Set tabs to be TABs that take 3 characters
+set shiftwidth=3
+set tabstop=3
 set autoindent
 
 set encoding=utf-8
@@ -42,6 +42,9 @@ set gdefault
 set incsearch
 set showmatch
 set hlsearch
+
+" Prevent text from wrapping
+set nowrap
 
 " \<space> clears search
 nnoremap <leader><space> :noh<cr>
