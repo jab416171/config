@@ -22,7 +22,7 @@
 #
 #   http://gist.github.com/31967
 
-
+alias open='nautilus'
 # The various escape codes that we can use to color our prompt.
 # Reset
 Color_Off="\[\033[0m\]"       # Text Reset
@@ -131,12 +131,15 @@ function set_git_branch {
   fi
   
   # Set arrow icon based on status against remote.
-  remote_pattern="# Your branch is (.*)"
+  remote_pattern="# Your branch is (ahead|behind) .*by ([0-9][0-9]*)"
+
+  # NOTE: This pings the server. If this is slow, change git_remote_status to just git_status
+  query_git_remote_status
   if [[ ${git_status} =~ ${remote_pattern} ]]; then
     if [[ ${BASH_REMATCH[1]} == "ahead" ]]; then
-      remote="↑"
+      remote="↑ $Color_Off(${BASH_REMATCH[2]})"
     else
-      remote="↓"
+      remote="↓ $Color_Off(${BASH_REMATCH[2]})"
     fi
   else
     remote=""
@@ -156,6 +159,17 @@ function set_git_branch {
   BRANCH="${state}(${branch})${remote}${Color_Off} "
 }
 
+function query_git_remote_status {
+  current_time="$(date +%s)"
+  file_modification_time="$(stat -c %Y /tmp/gitremotestatus 2> /dev/null || (echo $(git remote update 2>&1 > /dev/null && git status -uno 2> /dev/null) >  /tmp/gitremotestatus && stat -c %Y /tmp/gitremotestatus))"
+  file_modification_time="$(($file_modification_time + 60))"
+  if [ "$file_modification_time" -lt "$current_time" ]; then 
+    rm /tmp/gitremotestatus
+	 echo $(git remote update 2>&1 > /dev/null && git status -uno 2> /dev/null) >  /tmp/gitremotestatus
+	 echo "Updating the file!"
+  fi
+  git_remote_status="$(cat /tmp/gitremotestatus)"
+}
 # Determine the branch information for this subversion repository. No support
 # for svn status, since that needs to hit the remote repository.
 function set_svn_branch {
